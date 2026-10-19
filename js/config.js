@@ -15,8 +15,7 @@ const CARIMBOS_POR_CARTAO = 10;
 // Precisa ser uma das chaves de EMPRESAS (abaixo).
 const EMPRESA_PADRAO = "OliveiraPizzaria";
 
-// Visual de cada cartão. A CHAVE é o texto salvo no campo "imgCartao" do banco.
-// Para ter outra empresa, crie outra chave aqui e use o mesmo texto no imgCartao.
+// Tema e posições dos carimbos por empresa. As imagens vêm da entidade Empresa na API.
 const EMPRESAS = {
     OliveiraPizzaria: {
         empresa: "Pizzaria Oliveira",

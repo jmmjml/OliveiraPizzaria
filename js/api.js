@@ -6,10 +6,15 @@
 // Função única que faz a chamada, trata os erros e devolve o JSON já pronto.
 async function requisicao(caminho, opcoes = {}) {
     let resposta;
+    const token = sessionStorage.getItem("accessToken");
     try {
         resposta = await fetch(API_URL + caminho, {
-            headers: { "Content-Type": "application/json" },
-            ...opcoes
+            ...opcoes,
+            headers: {
+                "Content-Type": "application/json",
+                ...(opcoes.headers || {}),
+                ...(token ? { Authorization: "Bearer " + token } : {})
+            }
         });
     } catch (erroDeRede) {
         // fetch só "falha" aqui quando nem chegou na API (desligada, sem internet ou CORS)
@@ -25,6 +30,12 @@ async function requisicao(caminho, opcoes = {}) {
     const corpo = await resposta.json().catch(() => null);
 
     if (!resposta.ok) {
+        if (resposta.status === 401 && token && !caminho.endsWith("/login")) {
+            sessionStorage.removeItem("accessToken");
+            sessionStorage.removeItem("perfil");
+            sessionStorage.removeItem("clienteId");
+            window.location.assign("login.html");
+        }
         // Erros da API vêm como { status, erro, mensagem, campos? }
         let mensagem = (corpo && corpo.mensagem) || "Erro " + resposta.status;
         if (corpo && corpo.campos) {
@@ -48,12 +59,23 @@ const api = {
         body: JSON.stringify(credenciais)
     }),
 
+    atualizarCliente: (id, dados) => requisicao("/api/usuarios/" + encodeURIComponent(id), {
+        method: "PUT",
+        body: JSON.stringify(dados)
+    }),
+
+    excluirCliente: id => requisicao("/api/usuarios/" + encodeURIComponent(id), {
+        method: "DELETE"
+    }),
+
     criarCliente: dados => requisicao("/api/usuarios", {
         method: "POST",
         body: JSON.stringify(dados)
     }),
 
     listarCartoes: () => requisicao("/api/cartoes"),
+
+    listarEmpresas: () => requisicao("/api/empresas"),
 
     cartoesDoCliente: id => requisicao("/api/cartoes/usuario/" + encodeURIComponent(id)),
 
@@ -66,8 +88,8 @@ const api = {
         { method: "PUT" }
     ),
 
-    darCarimbo: (usuId, imgCartao) => requisicao(
-        "/api/carimbos/usuario/" + usuId + "?imgCartao=" + encodeURIComponent(imgCartao),
+    darCarimbo: (usuId, empresaId) => requisicao(
+        "/api/carimbos/usuario/" + encodeURIComponent(usuId) + "?empresaId=" + encodeURIComponent(empresaId),
         { method: "POST" }
     )
 };

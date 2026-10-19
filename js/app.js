@@ -16,7 +16,8 @@ function showText(id, text) {
 
 const perfilSessao = (sessionStorage.getItem("perfil") || "").trim().toLowerCase();
 const isAdmin = perfilSessao === "admin" || perfilSessao === "administrador";
-const isAuthenticated = isAdmin || perfilSessao === "cliente";
+const isAuthenticated = Boolean(sessionStorage.getItem("accessToken")) &&
+    (isAdmin || perfilSessao === "cliente");
 
 // Faixa de aviso no topo da página: "Carregando...", erros e confirmações.
 // tipo: "secondary" (cinza), "danger" (vermelho) ou "success" (verde).
@@ -67,9 +68,21 @@ function clienteIdDaSessao() {
     return sessionStorage.getItem("clienteId");
 }
 
-// Escolhe o visual do cartão pelo texto do imgCartao (ou usa a empresa padrão).
-function empresaDoCartao(cartao) {
-    return EMPRESAS[cartao && cartao.imgCartao] || EMPRESAS[EMPRESA_PADRAO];
+function empresaDoCartao(cartao, empresas = []) {
+    const empresaApi = (cartao && cartao.empresa) ||
+        empresas.find(empresa => empresa.nome === EMPRESA_PADRAO);
+    if (!empresaApi) {
+        throw new Error("A empresa deste cartão não foi encontrada na API.");
+    }
+    const tema = EMPRESAS[empresaApi.nome] || EMPRESAS[EMPRESA_PADRAO];
+    return {
+        ...tema,
+        ...empresaApi,
+        empresa: tema.empresa || empresaApi.nome,
+        logo: empresaApi.logoPath,
+        frente: empresaApi.frentePath,
+        costas: empresaApi.costasPath
+    };
 }
 
 async function incluirTotalCarimbos(cartoes, clienteId) {
@@ -107,9 +120,10 @@ async function paginaCartao(clienteId) {
     mostrarStatus("Carregando seu cartão... (se a API estiver 'dormindo', a primeira vez pode levar cerca de 1 minuto)", "secondary");
 
     // As duas consultas rodam ao mesmo tempo
-    const [cliente, cartoesRecebidos] = await Promise.all([
+    const [cliente, cartoesRecebidos, empresas] = await Promise.all([
         api.buscarCliente(clienteId),
-        api.cartoesDoCliente(clienteId)
+        api.cartoesDoCliente(clienteId),
+        api.listarEmpresas()
     ]);
     const cartoes = await incluirTotalCarimbos(cartoesRecebidos, clienteId);
     esconderStatus();
@@ -118,12 +132,12 @@ async function paginaCartao(clienteId) {
     const naoResgatados = cartoes.filter(c => c.entregue !== "S");
     const cartaoAtual = naoResgatados.length ? naoResgatados[naoResgatados.length - 1] : null;
 
-    renderCard(cliente, cartaoAtual);
+    renderCard(cliente, cartaoAtual, empresas);
     renderHistoricoCliente(cartoes);
 }
 
-function renderCard(cliente, cartao) {
-    const empresa = empresaDoCartao(cartao);
+function renderCard(cliente, cartao, empresas) {
+    const empresa = empresaDoCartao(cartao, empresas);
     const totalCarimbos = Number(cartao && cartao.totalCarimbos);
     const conquistados = Number.isFinite(totalCarimbos)
         ? Math.min(Math.max(totalCarimbos, 0), CARIMBOS_POR_CARTAO)
@@ -255,8 +269,28 @@ async function paginaClientes() {
     cartoes.forEach(c => cartoesPorCliente[c.usuId] = (cartoesPorCliente[c.usuId] || 0) + 1);
 
     // Administradores não aparecem na lista de clientes
-    const clientes = usuarios.filter(u => u.cargo !== "admin");
+    const clientes = usuarios.filter(u => !["admin", "administrador"]
+        .includes(String(u.cargo || "").trim().toLowerCase()));
     renderCustomers(clientes, cartoesPorCliente);
+}
+
+function abrirEdicaoCliente(cliente) {
+    byId("edit-customer-id").value = cliente.id;
+    byId("edit-customer-name").value = cliente.nome || "";
+    byId("edit-customer-email").value = cliente.email || "";
+    byId("edit-customer-cpf").value = cliente.cpf || "";
+    byId("edit-customer-phone").value = (cliente.celulares || [])
+        .slice(0, 1).map(formatarTelefone)[0] || "";
+    byId("edit-customer-message").textContent = "";
+    bootstrap.Modal.getOrCreateInstance(byId("edit-customer-modal")).show();
+}
+
+function abrirConfirmacaoExclusao(cliente) {
+    byId("confirm-delete-customer").dataset.customerId = cliente.id;
+    byId("delete-customer-confirmation").textContent =
+        "A conta de " + cliente.nome + " será excluída.";
+    byId("delete-customer-message").textContent = "";
+    bootstrap.Modal.getOrCreateInstance(byId("delete-customer-modal")).show();
 }
 
 function renderCustomers(clientes, cartoesPorCliente) {
@@ -282,11 +316,8 @@ function renderCustomers(clientes, cartoesPorCliente) {
             const id = encodeURIComponent(cliente.id);
 
             const celulaNome = document.createElement("th");
-            const linkHistorico = document.createElement("a");
             celulaNome.scope = "row";
-            linkHistorico.href = "historico.html?id=" + id;
-            linkHistorico.textContent = cliente.nome;
-            celulaNome.append(linkHistorico);
+            celulaNome.textContent = cliente.nome;
 
             const celulaTelefone = document.createElement("td");
             celulaTelefone.textContent = (cliente.celulares || []).map(formatarTelefone).join(", ") || "—";
@@ -301,14 +332,124 @@ function renderCustomers(clientes, cartoesPorCliente) {
             linkCartao.textContent = "Abrir histórico";
             celulaPagina.append(linkCartao);
 
-            linha.append(celulaNome, celulaTelefone, celulaEmail, celulaQtd, celulaPagina);
+            const celulaAcoes = document.createElement("td");
+            const grupoAcoes = document.createElement("div");
+            const botaoEditar = document.createElement("button");
+            const botaoExcluir = document.createElement("button");
+            grupoAcoes.className = "d-flex flex-wrap gap-2";
+            botaoEditar.type = "button";
+            botaoEditar.className = "btn btn-outline-primary btn-sm";
+            botaoEditar.textContent = "Editar";
+            botaoEditar.setAttribute("aria-label", "Editar " + cliente.nome);
+            botaoEditar.addEventListener("click", evento => {
+                evento.stopPropagation();
+                abrirEdicaoCliente(cliente);
+            });
+            botaoExcluir.type = "button";
+            botaoExcluir.className = "btn btn-outline-danger btn-sm";
+            botaoExcluir.textContent = "Excluir";
+            botaoExcluir.setAttribute("aria-label", "Excluir " + cliente.nome);
+            botaoExcluir.addEventListener("click", evento => {
+                evento.stopPropagation();
+                abrirConfirmacaoExclusao(cliente);
+            });
+            grupoAcoes.append(botaoEditar, botaoExcluir);
+            celulaAcoes.append(grupoAcoes);
+
+            linha.className = "customer-row";
+            linha.tabIndex = 0;
+            linha.setAttribute("role", "link");
+            linha.setAttribute("aria-label", "Abrir moderação e carimbos de " + cliente.nome);
+            linha.addEventListener("click", evento => {
+                if (evento.target.closest("a, button, input, select, textarea")) return;
+                window.location.assign("historico.html?id=" + id);
+            });
+            linha.addEventListener("keydown", evento => {
+                if (evento.target !== linha || (evento.key !== "Enter" && evento.key !== " ")) return;
+                evento.preventDefault();
+                window.location.assign("historico.html?id=" + id);
+            });
+
+            linha.append(celulaNome, celulaTelefone, celulaEmail, celulaQtd, celulaPagina, celulaAcoes);
             lista.append(linha);
         });
         byId("empty-search").hidden = encontrados.length > 0;
     }
 
-    busca.addEventListener("input", evento => atualizarLista(evento.currentTarget.value));
+    busca.oninput = evento => atualizarLista(evento.currentTarget.value);
     atualizarLista("");
+}
+
+function configurarAcoesClientes() {
+    byId("edit-customer-form")?.addEventListener("submit", async evento => {
+        evento.preventDefault();
+        const formulario = evento.currentTarget;
+        const botao = byId("save-customer-button");
+        const mensagem = byId("edit-customer-message");
+        const celularTexto = byId("edit-customer-phone").value.trim();
+        const celular = celularTexto ? separarTelefone(celularTexto) : null;
+
+        if (celularTexto && !celular) {
+            mensagem.className = "small mt-3 mb-0 text-danger";
+            mensagem.textContent = "Informe o celular com DDD, por exemplo (18) 90000-0000.";
+            return;
+        }
+
+        botao.disabled = true;
+        mensagem.className = "small mt-3 mb-0 text-secondary";
+        mensagem.textContent = "Salvando alterações...";
+        try {
+            const cliente = await api.buscarCliente(byId("edit-customer-id").value);
+            const dados = {
+                nome: byId("edit-customer-name").value.trim(),
+                apelido: cliente.apelido || "",
+                cpf: byId("edit-customer-cpf").value.trim(),
+                email: byId("edit-customer-email").value.trim(),
+                senha: "",
+                cargo: cliente.cargo,
+                celulares: celular ? [celular] : []
+            };
+            await api.atualizarCliente(cliente.id, dados);
+            bootstrap.Modal.getOrCreateInstance(byId("edit-customer-modal")).hide();
+            try {
+                await paginaClientes();
+                mostrarStatus("Dados do cliente atualizados.", "success");
+            } catch (erroAoAtualizarLista) {
+                mostrarStatus("Dados salvos, mas não foi possível atualizar a lista: " +
+                    erroAoAtualizarLista.message, "warning");
+            }
+        } catch (erro) {
+            mensagem.className = "small mt-3 mb-0 text-danger";
+            mensagem.textContent = erro.message;
+        } finally {
+            botao.disabled = false;
+        }
+    });
+
+    byId("confirm-delete-customer")?.addEventListener("click", async evento => {
+        const botao = evento.currentTarget;
+        const clienteId = botao.dataset.customerId;
+        const mensagem = byId("delete-customer-message");
+        botao.disabled = true;
+        mensagem.className = "small mt-3 mb-0 text-secondary";
+        mensagem.textContent = "Excluindo cliente e histórico...";
+        try {
+            await api.excluirCliente(clienteId);
+            bootstrap.Modal.getOrCreateInstance(byId("delete-customer-modal")).hide();
+            try {
+                await paginaClientes();
+                mostrarStatus("Cliente e histórico excluídos.", "success");
+            } catch (erroAoAtualizarLista) {
+                mostrarStatus("Cliente excluído, mas não foi possível atualizar a lista: " +
+                    erroAoAtualizarLista.message, "warning");
+            }
+        } catch (erro) {
+            mensagem.className = "small mt-3 mb-0 text-danger";
+            mensagem.textContent = erro.message;
+        } finally {
+            botao.disabled = false;
+        }
+    });
 }
 
 // ---------------------------------------------------------------------
@@ -326,8 +467,12 @@ async function paginaHistorico() {
     mostrarStatus("Carregando histórico... (se a API estiver 'dormindo', a primeira vez pode levar cerca de 1 minuto)", "secondary");
 
     let cliente;
+    let empresas;
     try {
-        cliente = await api.buscarCliente(id);
+        [cliente, empresas] = await Promise.all([
+            api.buscarCliente(id),
+            api.listarEmpresas()
+        ]);
     } catch (erro) {
         if (erro.status === 404) {
             esconderStatus();
@@ -351,7 +496,11 @@ async function paginaHistorico() {
         byId("stamp-message").className = "small text-secondary";
         showText("stamp-message", "Salvando...");
         try {
-            const carimbo = await api.darCarimbo(cliente.id, EMPRESA_PADRAO);
+            const empresaPadrao = empresas.find(empresa => empresa.nome === EMPRESA_PADRAO);
+            if (!empresaPadrao) {
+                throw new Error("A empresa padrão não está cadastrada na API.");
+            }
+            const carimbo = await api.darCarimbo(cliente.id, empresaPadrao.id);
             await carregarCartoesDoHistorico(cliente.id);
             byId("stamp-message").className = "small text-success";
             showText("stamp-message", "Carimbo " + carimbo.carimId + " adicionado.");
@@ -453,6 +602,7 @@ function configurarFormularios() {
     document.querySelectorAll(".logout-link").forEach(link => {
         link.addEventListener("click", evento => {
             evento.preventDefault();
+            sessionStorage.removeItem("accessToken");
             sessionStorage.removeItem("perfil");
             sessionStorage.removeItem("clienteId");
             window.location.assign("login.html");
@@ -517,16 +667,18 @@ function configurarFormularios() {
             const id = usuario.id;
             const administrador = cargo === "admin" || cargo === "administrador";
 
-            if (!id || (!administrador && cargo !== "cliente")) {
-                throw new Error("A API retornou um usuário sem ID ou com cargo não reconhecido.");
+            if (!id || !usuario.accessToken || (!administrador && cargo !== "cliente")) {
+                throw new Error("A API retornou um usuário sem token, sem ID ou com cargo não reconhecido.");
             }
 
+            sessionStorage.setItem("accessToken", usuario.accessToken);
             sessionStorage.setItem("perfil", cargo);
             sessionStorage.setItem("clienteId", String(id));
             mensagem.className = "small mt-3 mb-0 text-success";
             mensagem.textContent = "Acesso autorizado. Redirecionando...";
             window.location.assign(administrador ? "clientes.html" : "index.html");
         } catch (erro) {
+            sessionStorage.removeItem("accessToken");
             sessionStorage.removeItem("perfil");
             sessionStorage.removeItem("clienteId");
             mensagem.className = "small mt-3 mb-0 text-danger";
@@ -580,6 +732,7 @@ function configurarFormularios() {
 // ---------------------------------------------------------------------
 async function iniciar() {
     configurarFormularios();
+    configurarAcoesClientes();
 
     if (byId("login-form")) {
         if (isAuthenticated) {

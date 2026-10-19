@@ -13,7 +13,7 @@
         <div class="container">
             <a class="navbar-brand fw-bold" href="index.html">
                 <img class="brand-logo" src="img/logos/OliveiraPizzaria.png" alt="">
-                Pizzaria Oliveira - sistema fidelidade
+                Pizzaria Oliveira - Cartão Fidelidade
             </a>
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#main-navigation"
                     aria-controls="main-navigation" aria-expanded="false" aria-label="Abrir menu">
@@ -59,6 +59,7 @@
                                 <th scope="col">E-mail</th>
                                 <th scope="col">Cartões</th>
                                 <th scope="col">Histórico</th>
+                                <th scope="col">Ações</th>
                             </tr>
                         </thead>
                         <tbody id="customer-list"></tbody>
@@ -68,6 +69,82 @@
             </div>
         </section>
     </main>
+
+    <div class="modal fade" id="edit-customer-modal" tabindex="-1"
+         aria-labelledby="edit-customer-title" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <form id="edit-customer-form">
+                    <div class="modal-header">
+                        <h2 class="modal-title fs-5" id="edit-customer-title">Editar cliente</h2>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"
+                                aria-label="Fechar"></button>
+                    </div>
+                    <div class="modal-body">
+                        <input id="edit-customer-id" type="hidden">
+                        <div class="mb-3">
+                            <label class="form-label" for="edit-customer-name">Nome completo</label>
+                            <input id="edit-customer-name" class="form-control" maxlength="100" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label" for="edit-customer-email">E-mail</label>
+                            <input id="edit-customer-email" class="form-control" type="email"
+                                   maxlength="200" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label" for="edit-customer-cpf">CPF</label>
+                            <input id="edit-customer-cpf" class="form-control" maxlength="14">
+                        </div>
+                        <div class="mb-2">
+                            <label class="form-label" for="edit-customer-phone">Celular principal</label>
+                            <input id="edit-customer-phone" class="form-control" type="tel"
+                                   inputmode="numeric" placeholder="(18) 90000-0000">
+                            <div class="form-text">Se houver outros celulares, eles serão mantidos.</div>
+                        </div>
+                        <p id="edit-customer-message" class="small mt-3 mb-0"
+                           role="status" aria-live="polite"></p>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">
+                            Cancelar
+                        </button>
+                        <button id="save-customer-button" class="btn btn-dark" type="submit">
+                            Salvar alterações
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="delete-customer-modal" tabindex="-1"
+         aria-labelledby="delete-customer-title" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h2 class="modal-title fs-5" id="delete-customer-title">Excluir cliente?</h2>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"
+                            aria-label="Fechar"></button>
+                </div>
+                <div class="modal-body">
+                    <p id="delete-customer-confirmation" class="mb-2"></p>
+                    <p class="small text-secondary mb-0">
+                        A exclusão também remove os cartões e carimbos deste cliente e não pode ser desfeita.
+                    </p>
+                    <p id="delete-customer-message" class="small mt-3 mb-0"
+                       role="status" aria-live="polite"></p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">
+                        Cancelar
+                    </button>
+                    <button id="confirm-delete-customer" class="btn btn-danger" type="button">
+                        Excluir cliente
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
 
     <script src="js/config.js"></script>
     <script src="js/api.js"></script>
