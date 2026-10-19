@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Clientes | Fidelidade</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="css/cartao.css" rel="stylesheet">
+</head>
+<body>
+    <nav class="navbar navbar-expand-md app-navbar">
+        <div class="container">
+            <a class="navbar-brand fw-bold" href="index.html">
+                <img class="brand-logo" src="img/logos/OliveiraPizzaria.png" alt="">
+                Pizzaria Oliveira - sistema fidelidade
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#main-navigation"
+                    aria-controls="main-navigation" aria-expanded="false" aria-label="Abrir menu">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="main-navigation">
+                <div class="navbar-nav ms-auto align-items-md-center gap-md-2">
+                    <a class="nav-link admin-link" href="clientes.html" hidden>Clientes</a>
+                    <a class="nav-link admin-link" href="cadastro.html" hidden>Cadastrar cliente</a>
+                    <a class="nav-link login-link" href="login.html">Entrar</a>
+                    <a class="nav-link logout-link" href="login.html" hidden>Sair</a>
+                    <a class="nav-link account-link fw-semibold" href="conta.html">
+                        <span id="header-person-name">Minha conta</span>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <main class="container py-5">
+        <div id="api-status" class="alert alert-secondary" role="status" hidden></div>
+        <section id="admin-denied" class="alert alert-warning" hidden>
+            A lista de clientes é restrita à equipe da empresa. <a href="login.html">Entrar como administrador</a>.
+        </section>
+        <section id="admin-content" hidden aria-labelledby="page-title">
+            <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-end gap-3 mb-4">
+                <div>
+                    <p class="eyebrow mb-2">ÁREA ADMINISTRATIVA</p>
+                    <h1 id="page-title" class="h2 mb-0">Clientes cadastrados</h1>
+                </div>
+                <a class="btn btn-dark" href="cadastro.html">Cadastrar cliente</a>
+            </div>
+            <div class="card-preview p-3 p-md-4">
+                <label class="form-label" for="customer-search">Buscar cliente</label>
+                <input id="customer-search" class="form-control mb-3" type="search"
+                       placeholder="Digite nome, celular ou e-mail">
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle mb-0">
+                        <thead>
+                            <tr>
+                                <th scope="col">Nome</th>
+                                <th scope="col">Celular</th>
+                                <th scope="col">E-mail</th>
+                                <th scope="col">Cartões</th>
+                                <th scope="col">Histórico</th>
+                            </tr>
+                        </thead>
+                        <tbody id="customer-list"></tbody>
+                    </table>
+                </div>
+                <p id="empty-search" class="small text-secondary mt-3 mb-0" hidden>Nenhum cliente encontrado.</p>
+            </div>
+        </section>
+    </main>
+
+    <script src="js/config.js"></script>
+    <script src="js/api.js"></script>
+    <script src="js/app.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

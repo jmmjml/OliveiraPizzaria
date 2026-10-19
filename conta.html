@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Minha conta | Fidelidade</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="css/cartao.css" rel="stylesheet">
+</head>
+<body>
+    <nav class="navbar navbar-expand-md app-navbar">
+        <div class="container">
+            <a class="navbar-brand fw-bold" href="index.html">
+                <img class="brand-logo" src="img/logos/OliveiraPizzaria.png" alt="">
+                Pizzaria Oliveira - sistema fidelidade
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#main-navigation"
+                    aria-controls="main-navigation" aria-expanded="false" aria-label="Abrir menu">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="main-navigation">
+                <div class="navbar-nav ms-auto align-items-md-center gap-md-2">
+                    <a class="nav-link admin-link" href="clientes.html" hidden>Clientes</a>
+                    <a class="nav-link admin-link" href="cadastro.html" hidden>Cadastrar cliente</a>
+                    <a class="nav-link login-link" href="login.html">Entrar</a>
+                    <a class="nav-link logout-link" href="login.html" hidden>Sair</a>
+                    <a class="nav-link account-link fw-semibold" href="conta.html">
+                        <span id="header-person-name">Minha conta</span>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <main class="container py-5">
+        <div id="api-status" class="alert alert-secondary" role="status" hidden></div>
+        <section class="mx-auto" style="max-width: 760px" aria-labelledby="page-title">
+            <p class="eyebrow mb-2">PERFIL DO CLIENTE</p>
+            <h1 id="page-title" class="h2 mb-4">Minha conta</h1>
+            <div class="card-preview p-4 p-md-5">
+                <div class="d-flex flex-column flex-sm-row justify-content-between gap-3 mb-4">
+                    <div>
+                        <h2 id="account-name" class="h4 mb-1"></h2>
+                        <p class="text-secondary mb-0">Dados cadastrados na sua conta</p>
+                    </div>
+                    <a id="back-to-card" class="btn btn-outline-dark align-self-sm-start" href="index.html">Voltar ao cartão</a>
+                </div>
+                <dl class="row mb-0 account-details">
+                    <dt class="col-sm-4">Nome completo</dt>
+                    <dd class="col-sm-8" id="account-full-name"></dd>
+                    <dt class="col-sm-4">CPF</dt>
+                    <dd class="col-sm-8" id="account-cpf"></dd>
+                    <dt class="col-sm-4">E-mail</dt>
+                    <dd class="col-sm-8" id="account-email"></dd>
+                    <dt class="col-sm-4">Telefones de contato</dt>
+                    <dd class="col-sm-8" id="account-contacts"></dd>
+                </dl>
+            </div>
+        </section>
+    </main>
+
+    <script src="js/config.js"></script>
+    <script src="js/api.js"></script>
+    <script src="js/app.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
