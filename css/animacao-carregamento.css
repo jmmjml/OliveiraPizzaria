@@ -1,0 +1,83 @@
+.pizza-slice {
+    fill: var(--brand-dark);
+    stroke: var(--brand-dark);
+    stroke-width: 3px;
+    stroke-linejoin: round;
+    opacity: 0;
+    animation: pizza-slice-appear 8.6s ease-in-out infinite;
+}
+
+.pizza-slice-two {
+    animation-name: pizza-slice-appear-two;
+}
+
+.pizza-slice-three {
+    animation-name: pizza-slice-appear-three;
+}
+
+.pizza-slice-four {
+    animation-name: pizza-slice-appear-four;
+}
+
+.pizza-slice-five {
+    animation-name: pizza-slice-appear-five;
+}
+
+.pizza-slice-six {
+    animation-name: pizza-slice-appear-six;
+}
+
+.pizza-slice-seven {
+    animation-name: pizza-slice-appear-seven;
+}
+
+.pizza-slice-eight {
+    animation-name: pizza-slice-appear-eight;
+}
+
+@keyframes pizza-slice-appear {
+    0%, 53.3%, 100% { opacity: 0; }
+    4.47%, 48.84% { opacity: 1; }
+}
+
+@keyframes pizza-slice-appear-two {
+    0%, 5.95%, 59.26%, 100% { opacity: 0; }
+    10.42%, 54.79% { opacity: 1; }
+}
+
+@keyframes pizza-slice-appear-three {
+    0%, 11.91%, 65.21%, 100% { opacity: 0; }
+    16.37%, 60.74% { opacity: 1; }
+}
+
+@keyframes pizza-slice-appear-four {
+    0%, 17.86%, 71.16%, 100% { opacity: 0; }
+    22.33%, 66.7% { opacity: 1; }
+}
+
+@keyframes pizza-slice-appear-five {
+    0%, 23.81%, 77.12%, 100% { opacity: 0; }
+    28.28%, 72.65% { opacity: 1; }
+}
+
+@keyframes pizza-slice-appear-six {
+    0%, 29.77%, 83.07%, 100% { opacity: 0; }
+    34.23%, 78.6% { opacity: 1; }
+}
+
+@keyframes pizza-slice-appear-seven {
+    0%, 35.72%, 89.02%, 100% { opacity: 0; }
+    40.19%, 84.56% { opacity: 1; }
+}
+
+@keyframes pizza-slice-appear-eight {
+    0%, 41.67%, 94.98%, 100% { opacity: 0; }
+    46.14%, 90.51% { opacity: 1; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .pizza-slice {
+        animation: none;
+        opacity: 1;
+    }
+}

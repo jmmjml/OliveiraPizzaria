@@ -77,6 +77,41 @@ body {
     min-height: 3.5rem;
 }
 
+.api-loading-overlay {
+    position: fixed;
+    z-index: 2000;
+    inset: 0;
+    display: grid;
+    place-items: center;
+    padding: 1.5rem;
+    background: rgb(245 244 241 / 94%);
+    backdrop-filter: blur(5px);
+}
+
+.api-loading-overlay[hidden] {
+    display: none;
+}
+
+.api-loading-content {
+    display: grid;
+    justify-items: center;
+    gap: 1rem;
+    text-align: center;
+}
+
+.pizza-loading {
+    width: clamp(7rem, 30vw, 10rem);
+    overflow: visible;
+}
+
+.api-loading-message {
+    max-width: 22rem;
+    margin: 0;
+    color: var(--brand-dark);
+    font-size: 1rem;
+    font-weight: 600;
+}
+
 .customer-row {
     cursor: pointer;
 }

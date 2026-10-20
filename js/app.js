@@ -9,6 +9,30 @@
 // ---------------------------------------------------------------------
 const byId = id => document.getElementById(id);
 
+function configurarOverlayCarregamento() {
+    if (byId("api-loading-overlay")) return;
+
+    document.body.insertAdjacentHTML("beforeend", `
+        <div id="api-loading-overlay" class="api-loading-overlay" role="status"
+             aria-live="polite" aria-hidden="true" hidden>
+            <div class="api-loading-content">
+                <svg class="pizza-loading" xmlns="http://www.w3.org/2000/svg"
+                     viewBox="0 0 200 200" aria-hidden="true">
+                    <path class="pizza-slice pizza-slice-one" d="M100 100 L100 25 A75 75 0 0 1 153.03 46.97 Z"/>
+                    <path class="pizza-slice pizza-slice-two" d="M100 100 L153.03 46.97 A75 75 0 0 1 175 100 Z"/>
+                    <path class="pizza-slice pizza-slice-three" d="M100 100 L175 100 A75 75 0 0 1 153.03 153.03 Z"/>
+                    <path class="pizza-slice pizza-slice-four" d="M100 100 L153.03 153.03 A75 75 0 0 1 100 175 Z"/>
+                    <path class="pizza-slice pizza-slice-five" d="M100 100 L100 175 A75 75 0 0 1 46.97 153.03 Z"/>
+                    <path class="pizza-slice pizza-slice-six" d="M100 100 L46.97 153.03 A75 75 0 0 1 25 100 Z"/>
+                    <path class="pizza-slice pizza-slice-seven" d="M100 100 L25 100 A75 75 0 0 1 46.97 46.97 Z"/>
+                    <path class="pizza-slice pizza-slice-eight" d="M100 100 L46.97 46.97 A75 75 0 0 1 100 25 Z"/>
+                </svg>
+                <p class="api-loading-message">procurando no sistema, aguarde alguns instantes</p>
+            </div>
+        </div>
+    `);
+}
+
 // Atualiza o texto de um elemento, se ele existir na página atual.
 function showText(id, text) {
     byId(id) && (byId(id).textContent = text);
@@ -751,6 +775,7 @@ function configurarFormularios() {
 // 8. INICIALIZAÇÃO: decide o que rodar conforme os elementos da página
 // ---------------------------------------------------------------------
 async function iniciar() {
+    configurarOverlayCarregamento();
     configurarFormularios();
     configurarAcoesClientes();
 
