@@ -68,17 +68,36 @@ function clienteIdDaSessao() {
     return sessionStorage.getItem("clienteId");
 }
 
-function empresaDoCartao(cartao, empresas = []) {
+// Tema usado quando a empresa do cartão não tem entrada em EMPRESAS (config.js).
+// Assim a tela nunca quebra por causa de uma empresa nova ou de um config.js desatualizado.
+const TEMA_PADRAO = {
+    corTema: "#c9a65b",
+    corFundo: "#201d19",
+    posicoesCarimbos: [
+        { x: 14.2, y: 29.6 }, { x: 31.8, y: 29.6 }, { x: 49.7, y: 29.6 },
+        { x: 67.3, y: 29.6 }, { x: 83.4, y: 29.6 },
+        { x: 14.2, y: 52.8 }, { x: 31.8, y: 52.8 }, { x: 49.7, y: 52.8 },
+        { x: 67.3, y: 52.8 }, { x: 83.4, y: 52.8 }
+    ]
+};
+
+// Empresas já carregadas da API nesta página (usadas quando o cartão não traz a empresa)
+let empresasDaPagina = [];
+
+function empresaDoCartao(cartao, empresas = empresasDaPagina) {
     const empresaApi = (cartao && cartao.empresa) ||
-        empresas.find(empresa => empresa.nome === EMPRESA_PADRAO);
+        (empresas || []).find(empresa => empresa && empresa.nome === EMPRESA_PADRAO);
     if (!empresaApi) {
         throw new Error("A empresa deste cartão não foi encontrada na API.");
     }
-    const tema = EMPRESAS[empresaApi.nome] || EMPRESAS[EMPRESA_PADRAO];
+    // Ordem de busca do tema: empresa do cartão -> empresa padrão -> primeira do config -> tema embutido
+    const tema = EMPRESAS[empresaApi.nome] || EMPRESAS[EMPRESA_PADRAO] ||
+        Object.values(EMPRESAS)[0] || TEMA_PADRAO;
     return {
+        ...TEMA_PADRAO,
         ...tema,
         ...empresaApi,
-        empresa: tema.empresa || empresaApi.nome,
+        empresa: tema.empresa || empresaApi.nome || "Empresa",
         logo: empresaApi.logoPath,
         frente: empresaApi.frentePath,
         costas: empresaApi.costasPath
@@ -483,6 +502,7 @@ async function paginaHistorico() {
         throw erro;
     }
 
+    empresasDaPagina = empresas;
     byId("customer-not-found").hidden = true;
     showText("page-title", cliente.nome);
     showText("customer-contact",
@@ -764,7 +784,10 @@ async function iniciar() {
         byId("customer-list") && isAdmin && await paginaClientes();
         byId("loyalty-history") && isAdmin && await paginaHistorico();
     } catch (erro) {
-        mostrarStatus(erro.message, "danger");
+        console.error(erro);
+        // Erros da API trazem status; os demais são erros do JavaScript: mostramos o arquivo e a linha
+        const onde = !erro.status && erro.stack ? " [" + (erro.stack.split("\n")[1] || "").trim() + "]" : "";
+        mostrarStatus(erro.message + onde, "danger");
     }
 }
 
