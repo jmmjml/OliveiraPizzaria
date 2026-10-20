@@ -13,7 +13,7 @@ const CARIMBOS_POR_CARTAO = 10;
 
 // Empresa usada ao adicionar carimbos pelo botão do administrador.
 // Precisa ser uma das chaves de EMPRESAS (abaixo).
-const EMPRESA_PADRAO = "OliveiraPizzaria";
+const EMPRESA_PADRAO = "Oliveira Pizzaria";
 
 // Tema e posições dos carimbos por empresa. As imagens vêm da entidade Empresa na API.
 const EMPRESAS = {
