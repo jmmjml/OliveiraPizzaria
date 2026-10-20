@@ -18,7 +18,7 @@ const EMPRESA_PADRAO = "Oliveira Pizzaria";
 // Tema e posições dos carimbos por empresa. As imagens vêm da entidade Empresa na API.
 const EMPRESAS = {
     OliveiraPizzaria: {
-        empresa: "Pizzaria Oliveira",
+        empresa: "Oliveira Pizzaria",
         corTema: "#c9a65b",
         corFundo: "#201d19",
         frente: "img/cartoes/OliveiraPizzaria_frente.png",
